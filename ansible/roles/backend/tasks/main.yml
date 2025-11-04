@@ -7,14 +7,16 @@
     state: present
     update_cache: yes
 
-- name: Install Netdata using official script
+- name: Install Netdata using official install script (2025 URL)
   ansible.builtin.shell: |
-    bash <(curl -Ss https://my-netdata.io/kickstart.sh) --non-interactive --disable-telemetry
+    bash <(curl -Ss https://kickstart.netdata.cloud/install.sh) --disable-telemetry --non-interactive
   args:
     executable: /bin/bash
   become: yes
+  register: netdata_install
+  changed_when: "'already installed' not in netdata_install.stdout"
 
-- name: Ensure Netdata is running
+- name: Ensure Netdata service is enabled and running
   ansible.builtin.service:
     name: netdata
     state: started

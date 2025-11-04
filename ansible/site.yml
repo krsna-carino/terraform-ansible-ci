@@ -1,6 +1,19 @@
 ---
 - hosts: all
   become: yes
+  gather_facts: no
+
+  pre_tasks:
+    - name: Ensure Python 3 is installed (Amazon Linux)
+      raw: |
+        if ! command -v python3 >/dev/null 2>&1; then
+          yum install -y python3
+        fi
+      when: ansible_os_family == "RedHat" or ansible_distribution == "Amazon"
+
+    - name: Gather facts
+      setup:
+
   roles:
     - common
 

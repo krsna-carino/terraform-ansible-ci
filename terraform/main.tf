@@ -1,4 +1,3 @@
-# ✅ Get Default VPC and Subnets
 data "aws_vpc" "default" {
   default = true
 }
@@ -14,34 +13,30 @@ locals {
   subnet_id = data.aws_subnets.default.ids[0]
 }
 
-# ✅ Get Amazon Linux 2 AMI
 data "aws_ami" "amzn2" {
   most_recent = true
-  owners      = ["137112412989"] # Amazon
+  owners      = ["137112412989"]
   filter {
     name   = "name"
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
 
-# ✅ Get Ubuntu 21.04 AMI (fallback)
 data "aws_ami" "ubuntu_hirsute" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  owners      = ["099720109477"]
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-hirsute-21.04-amd64-server-*"]
   }
 }
 
-# ✅ Security Group
 resource "aws_security_group" "demo" {
   name        = "tf-ansible-demo"
   description = "Allow SSH, HTTP, and Netdata"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    description = "SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -49,7 +44,6 @@ resource "aws_security_group" "demo" {
   }
 
   ingress {
-    description = "HTTP"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -57,7 +51,6 @@ resource "aws_security_group" "demo" {
   }
 
   ingress {
-    description = "Netdata"
     from_port   = 19999
     to_port     = 19999
     protocol    = "tcp"
@@ -72,7 +65,6 @@ resource "aws_security_group" "demo" {
   }
 }
 
-# ✅ Frontend Instance (Amazon Linux)
 resource "aws_instance" "frontend" {
   ami                    = var.amazon_linux_ami_id != null ? var.amazon_linux_ami_id : data.aws_ami.amzn2.id
   instance_type          = "t3.micro"
@@ -91,7 +83,6 @@ resource "aws_instance" "frontend" {
               EOF
 }
 
-# ✅ Backend Instance (Ubuntu)
 resource "aws_instance" "backend" {
   ami                    = var.ubuntu_ami_id != null ? var.ubuntu_ami_id : data.aws_ami.ubuntu_hirsute.id
   instance_type          = "t3.micro"
@@ -110,7 +101,6 @@ resource "aws_instance" "backend" {
               EOF
 }
 
-# ✅ Generate Dynamic Inventory File
 data "template_file" "inventory" {
   template = file("${path.module}/templates/inventory.yaml.tmpl")
 

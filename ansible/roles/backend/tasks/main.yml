@@ -16,6 +16,14 @@
   register: netdata_install
   changed_when: "'already installed' not in netdata_install.stdout"
 
+- name: Reload systemd daemon
+  ansible.builtin.command: systemctl daemon-reexec
+  ignore_errors: yes
+
+- name: Reload systemd units
+  ansible.builtin.command: systemctl daemon-reload
+  ignore_errors: yes
+
 - name: Ensure Netdata service is enabled and running
   ansible.builtin.service:
     name: netdata

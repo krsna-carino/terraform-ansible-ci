@@ -4,7 +4,6 @@
   gather_facts: no
 
   pre_tasks:
-    # ✅ Run on all hosts without using ansible_os_family
     - name: Ensure Python 3 is installed if missing
       raw: |
         if ! command -v python3 >/dev/null 2>&1; then
@@ -17,6 +16,11 @@
             fi
           fi
         fi
+
+    - name: Force Python interpreter for Amazon Linux
+      set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+      when: inventory_hostname in groups['frontend']
 
     - name: Gather facts
       setup:

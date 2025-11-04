@@ -1,4 +1,10 @@
 ---
+- name: Ensure Python 3.9 is installed (Amazon Linux)
+  ansible.builtin.yum:
+    name: python3
+    state: present
+  when: ansible_distribution == "Amazon"
+
 - name: Disable SELinux on Amazon/RHEL
   ansible.builtin.selinux:
     state: disabled

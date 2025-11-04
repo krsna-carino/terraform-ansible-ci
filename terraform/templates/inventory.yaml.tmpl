@@ -1,0 +1,12 @@
+all:
+  children:
+    frontend:
+      hosts:
+        c8.local:
+          ansible_host: ${frontend_host}
+          ansible_user: ec2-user
+    backend:
+      hosts:
+        u21.local:
+          ansible_host: ${backend_host}
+          ansible_user: ubuntu

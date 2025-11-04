@@ -1,18 +1,13 @@
 ---
-- name: Ensure Python 3.9 is installed (Amazon Linux)
-  ansible.builtin.yum:
-    name: python3
-    state: present
-  when: ansible_distribution == "Amazon"
-
-- name: Disable SELinux on Amazon/RHEL
+- name: Disable SELinux (Amazon/RHEL)
   ansible.builtin.selinux:
     state: disabled
   when: ansible_os_family == "RedHat" or ansible_distribution == "Amazon"
 
-- name: Stop firewalld if present
+- name: Stop firewalld if running
   ansible.builtin.service:
     name: firewalld
     state: stopped
     enabled: false
   ignore_errors: true
+  when: ansible_service_mgr == "systemd"

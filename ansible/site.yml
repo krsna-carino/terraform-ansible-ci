@@ -4,12 +4,19 @@
   gather_facts: no
 
   pre_tasks:
-    - name: Ensure Python 3 is installed (Amazon Linux)
+    # ✅ Run on all hosts without using ansible_os_family
+    - name: Ensure Python 3 is installed if missing
       raw: |
         if ! command -v python3 >/dev/null 2>&1; then
-          yum install -y python3
+          if [ -f /etc/os-release ]; then
+            source /etc/os-release
+            if [[ "$ID" == "amzn" || "$ID_LIKE" == *"amzn"* ]]; then
+              yum install -y python3
+            elif [[ "$ID" == "ubuntu" || "$ID_LIKE" == *"debian"* ]]; then
+              apt-get update -y && apt-get install -y python3
+            fi
+          fi
         fi
-      when: ansible_os_family == "RedHat" or ansible_distribution == "Amazon"
 
     - name: Gather facts
       setup:

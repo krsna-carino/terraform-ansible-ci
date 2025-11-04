@@ -1,0 +1,16 @@
+events { worker_connections 1024; }
+
+http {
+  upstream backend_netdata {
+  {% for h in groups['backend'] %}
+    server {{ hostvars[h].ansible_host }}:19999;
+  {% endfor %}
+  }
+
+  server {
+    listen 80;
+    location / {
+      proxy_pass http://backend_netdata;
+    }
+  }
+}

@@ -1,3 +1,5 @@
+ansible_python_interpreter: /usr/bin/python3.9
+
 nginx_listen_port: 80
 backend_upstream_port: 19999
 backend_upstream_name: backend_netdata

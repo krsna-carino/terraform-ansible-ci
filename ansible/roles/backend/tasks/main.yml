@@ -1,23 +1,20 @@
 ---
-- name: Add Netdata GPG key (new URL)
-  ansible.builtin.get_url:
-    url: https://repo.netdata.cloud/repos/repoconfig/netdata-archive.key
-    dest: /usr/share/keyrings/netdata-archive-keyring.gpg
-    mode: '0644'
-
-- name: Add Netdata APT repository
-  ansible.builtin.copy:
-    dest: /etc/apt/sources.list.d/netdata.list
-    content: |
-      deb [signed-by=/usr/share/keyrings/netdata-archive-keyring.gpg] https://repo.netdata.cloud/repos/stable/ubuntu/ {{ ansible_distribution_release }} main
-
-- name: Install Netdata
+- name: Install dependencies for Netdata
   ansible.builtin.apt:
-    name: netdata
+    name:
+      - curl
+      - bash
     state: present
     update_cache: yes
 
-- name: Ensure Netdata is running and enabled
+- name: Install Netdata using official script
+  ansible.builtin.shell: |
+    bash <(curl -Ss https://my-netdata.io/kickstart.sh) --non-interactive --disable-telemetry
+  args:
+    executable: /bin/bash
+  become: yes
+
+- name: Ensure Netdata is running
   ansible.builtin.service:
     name: netdata
     state: started

@@ -1,24 +1,23 @@
 ---
-- name: Add Netdata repo key
-  ansible.builtin.apt_key:
-    url: https://repo.netdata.cloud/netdata.gpg.key
-    state: present
-  when: ansible_os_family == "Debian"
+- name: Add Netdata GPG key (new URL)
+  ansible.builtin.get_url:
+    url: https://repo.netdata.cloud/repos/repoconfig/netdata-archive.key
+    dest: /usr/share/keyrings/netdata-archive-keyring.gpg
+    mode: '0644'
 
-- name: Add Netdata repo
-  ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64] https://repo.netdata.cloud/repos/stable/ubuntu/ {{ ansible_distribution_release }} main"
-    state: present
-  when: ansible_os_family == "Debian"
+- name: Add Netdata APT repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/netdata.list
+    content: |
+      deb [signed-by=/usr/share/keyrings/netdata-archive-keyring.gpg] https://repo.netdata.cloud/repos/stable/ubuntu/ {{ ansible_distribution_release }} main
 
 - name: Install Netdata
   ansible.builtin.apt:
     name: netdata
     state: present
     update_cache: yes
-  when: ansible_os_family == "Debian"
 
-- name: Ensure Netdata is running
+- name: Ensure Netdata is running and enabled
   ansible.builtin.service:
     name: netdata
     state: started

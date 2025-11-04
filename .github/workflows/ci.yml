@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -28,7 +28,7 @@ jobs:
         with:
           terraform_version: 1.9.7
 
-      - name: Terraform Init/Apply
+      - name: Terraform Init and Apply
         working-directory: terraform
         run: |
           terraform init -input=false
@@ -37,14 +37,16 @@ jobs:
             -var "key_name=${{ secrets.EC2_KEY_NAME }}"
 
       - name: Install Ansible
-        run: sudo apt-get update && sudo apt-get install -y ansible
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ansible
 
-      - name: Setup SSH Key
+      - name: Configure SSH Key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: Run Ansible
+      - name: Run Ansible Playbook
         working-directory: ansible
         run: ansible-playbook -i inventory.generated.yaml site.yml

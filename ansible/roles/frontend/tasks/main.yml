@@ -1,31 +1,28 @@
 ---
-- name: Install nginx
+- name: Install nginx (Amazon/RHEL)
   ansible.builtin.yum:
     name: nginx
     state: present
   when: ansible_os_family in ["RedHat", "Amazon"]
 
-- name: Install nginx (Debian)
+- name: Install nginx (Debian/Ubuntu)
   ansible.builtin.apt:
     name: nginx
     state: present
     update_cache: yes
   when: ansible_os_family == "Debian"
 
-- name: Copy nginx config
+- name: Copy nginx configuration
   ansible.builtin.template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: "0644"
   notify: restart nginx
 
-- name: Ensure nginx running
+- name: Ensure nginx is running and enabled
   ansible.builtin.service:
     name: nginx
     state: started
     enabled: true
-
-- name: restart nginx
-  ansible.builtin.service:
-    name: nginx
-    state: restarted
-  listen: restart nginx

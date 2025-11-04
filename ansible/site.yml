@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: yes
+  roles:
+    - common
+
+- hosts: frontend
+  become: yes
+  roles:
+    - frontend
+
+- hosts: backend
+  become: yes
+  roles:
+    - backend

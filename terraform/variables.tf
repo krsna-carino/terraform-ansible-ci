@@ -22,7 +22,8 @@ variable "ubuntu_ami_id" {
   default = null
 }
 
+# ✅ Use static string, no interpolation
 variable "inventory_output_path" {
   type    = string
-  default = "${path.module}/../ansible/inventory.generated.yaml"
+  default = "../ansible/inventory.generated.yaml"
 }

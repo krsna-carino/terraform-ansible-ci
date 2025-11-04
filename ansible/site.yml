@@ -4,20 +4,21 @@
   gather_facts: no
 
   pre_tasks:
-    - name: Ensure Python 3 is installed if missing
+    - name: Ensure Python 3.9 is installed on Amazon Linux and Python 3 on Ubuntu
       raw: |
-        if ! command -v python3 >/dev/null 2>&1; then
-          if [ -f /etc/os-release ]; then
-            source /etc/os-release
-            if [[ "$ID" == "amzn" || "$ID_LIKE" == *"amzn"* ]]; then
-              yum install -y python3
-            elif [[ "$ID" == "ubuntu" || "$ID_LIKE" == *"debian"* ]]; then
-              apt-get update -y && apt-get install -y python3
+        if [ -f /etc/os-release ]; then
+          source /etc/os-release
+          if [[ "$ID" == "amzn" || "$ID_LIKE" == *"amzn"* ]]; then
+            amazon-linux-extras install python3.8 -y || yum install -y python39
+            if [ -f /usr/bin/python3.9 ]; then
+              ln -sf /usr/bin/python3.9 /usr/bin/python3
             fi
+          elif [[ "$ID" == "ubuntu" || "$ID_LIKE" == *"debian"* ]]; then
+            apt-get update -y && apt-get install -y python3
           fi
         fi
 
-    - name: Force Python interpreter for Amazon Linux
+    - name: Force Python interpreter for Amazon Linux hosts
       set_fact:
         ansible_python_interpreter: /usr/bin/python3
       when: inventory_hostname in groups['frontend']

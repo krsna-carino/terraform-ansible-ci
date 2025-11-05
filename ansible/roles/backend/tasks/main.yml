@@ -24,7 +24,7 @@
   ansible.builtin.command: systemctl daemon-reload
   ignore_errors: yes
 
-# ✅ Try to start Netdata whether it's installed as service or binary
+# ✅ Silenced gracefully if no systemd service exists
 - name: Ensure Netdata service is enabled and running (systemd)
   ansible.builtin.service:
     name: netdata

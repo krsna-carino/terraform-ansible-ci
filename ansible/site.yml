@@ -4,24 +4,24 @@
   gather_facts: no
 
   pre_tasks:
-    - name: Ensure Python 3.9 is installed on Amazon Linux and Python 3 on Ubuntu
+    - name: Ensure Python 3.8+ is installed on Amazon Linux and Python 3 on Ubuntu
       raw: |
         if [ -f /etc/os-release ]; then
           source /etc/os-release
           if [[ "$ID" == "amzn" || "$ID_LIKE" == *"amzn"* ]]; then
-            amazon-linux-extras install python3.8 -y || yum install -y python39
-            if [ -f /usr/bin/python3.9 ]; then
-              ln -sf /usr/bin/python3.9 /usr/bin/python3
+            amazon-linux-extras install python3.8 -y || yum install -y python38
+            if [ -f /usr/bin/python3.8 ]; then
+              ln -sf /usr/bin/python3.8 /usr/bin/python3
             fi
           elif [[ "$ID" == "ubuntu" || "$ID_LIKE" == *"debian"* ]]; then
             apt-get update -y && apt-get install -y python3
           fi
         fi
 
-    # ✅ Force Amazon Linux to use Python 3.9 explicitly
-    - name: Force Python interpreter to /usr/bin/python3.9 for Amazon Linux
+    # ✅ Force correct Python interpreter path
+    - name: Force Python interpreter for Amazon Linux
       set_fact:
-        ansible_python_interpreter: /usr/bin/python3.9
+        ansible_python_interpreter: /usr/bin/python3.8
       when: inventory_hostname in groups['frontend']
 
     - name: Reconnect SSH to pick up new interpreter

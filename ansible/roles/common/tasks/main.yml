@@ -1,12 +1,17 @@
 ---
-- name: Disable SELinux (Amazon/RHEL)
-  ansible.builtin.selinux:
-    state: disabled
+# ✅ Disable SELinux via config file — no Python dependency
+- name: Disable SELinux on Amazon/RHEL systems (edit /etc/selinux/config)
+  ansible.builtin.lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: 'SELINUX=disabled'
   when: ansible_os_family == "RedHat" or ansible_distribution == "Amazon"
+  become: yes
+  ignore_errors: yes
 
 - name: Stop firewalld if running
   ansible.builtin.shell: |
     systemctl list-unit-files | grep -q firewalld && systemctl stop firewalld && systemctl disable firewalld || echo "firewalld not present"
   args:
     executable: /bin/bash
-  ignore_errors: true
+  ignore_errors: yes

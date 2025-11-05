@@ -18,10 +18,14 @@
           fi
         fi
 
-    - name: Force Python interpreter for Amazon Linux hosts
+    # ✅ Force Amazon Linux to use Python 3.9 explicitly
+    - name: Force Python interpreter to /usr/bin/python3.9 for Amazon Linux
       set_fact:
-        ansible_python_interpreter: /usr/bin/python3
+        ansible_python_interpreter: /usr/bin/python3.9
       when: inventory_hostname in groups['frontend']
+
+    - name: Reconnect SSH to pick up new interpreter
+      meta: reset_connection
 
     - name: Gather facts
       setup:

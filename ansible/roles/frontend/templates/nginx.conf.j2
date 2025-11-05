@@ -16,9 +16,11 @@ http {
     sendfile        on;
     keepalive_timeout  65;
 
-    # ✅ Backend defined dynamically via Ansible
+    # ✅ Dynamic upstream — automatically gets the backend host from Ansible inventory
     upstream backend_netdata {
-        server {{ hostvars['u22.local']['ansible_host'] }}:19999;
+        {% for host in groups['backend'] %}
+        server {{ hostvars[host]['ansible_host'] }}:19999;
+        {% endfor %}
     }
 
     server {
@@ -32,7 +34,6 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
 
-            # ✅ Optional: better error handling
             proxy_connect_timeout 10s;
             proxy_read_timeout 60s;
         }

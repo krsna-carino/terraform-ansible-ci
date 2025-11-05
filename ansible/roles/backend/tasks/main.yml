@@ -4,9 +4,11 @@
     name:
       - curl
       - bash
+      - net-tools
     state: present
     update_cache: yes
 
+# ✅ Use current official Netdata install method (works on Ubuntu 22.04+)
 - name: Install Netdata using official install script (2025 URL)
   ansible.builtin.shell: |
     bash <(curl -Ss https://kickstart.netdata.cloud/install.sh) --disable-telemetry --non-interactive
@@ -16,27 +18,38 @@
   register: netdata_install
   changed_when: "'already installed' not in netdata_install.stdout"
 
-- name: Reload systemd daemon
-  ansible.builtin.command: systemctl daemon-reexec
+# ✅ Check if Netdata service exists
+- name: Check if Netdata service exists
+  ansible.builtin.shell: systemctl list-units --type=service | grep -q netdata.service
+  args:
+    executable: /bin/bash
+  register: netdata_service_check
   ignore_errors: yes
 
-- name: Reload systemd units
-  ansible.builtin.command: systemctl daemon-reload
-  ignore_errors: yes
-
-# ✅ Silenced gracefully if no systemd service exists
+# ✅ If service exists, ensure it's enabled and running
 - name: Ensure Netdata service is enabled and running (systemd)
   ansible.builtin.service:
     name: netdata
     state: started
     enabled: true
+  when: netdata_service_check.rc == 0
   ignore_errors: yes
 
+# ✅ If no systemd service, start it manually
 - name: Start Netdata manually if systemd service not found
   ansible.builtin.shell: |
-    if ! systemctl status netdata >/dev/null 2>&1; then
+    if ! pgrep -x netdata >/dev/null 2>&1; then
       nohup /usr/sbin/netdata >/dev/null 2>&1 &
     fi
   args:
     executable: /bin/bash
-  ignore_errors: yes
+  when: netdata_service_check.rc != 0
+  changed_when: true
+
+# ✅ Wait for Netdata port 19999 to come online
+- name: Wait for Netdata to be available
+  ansible.builtin.wait_for:
+    host: "{{ ansible_host }}"
+    port: 19999
+    delay: 5
+    timeout: 60

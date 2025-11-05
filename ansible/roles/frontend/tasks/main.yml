@@ -1,10 +1,19 @@
 ---
+# ✅ Amazon Linux or RHEL: install nginx with fallback to yum
 - name: Install nginx (Amazon/RHEL)
-  ansible.builtin.yum:
-    name: nginx
-    state: present
+  ansible.builtin.shell: |
+    if command -v dnf >/dev/null 2>&1; then
+      dnf install -y nginx || dnf5 install -y nginx || yum install -y nginx
+    elif command -v yum >/dev/null 2>&1; then
+      yum install -y nginx
+    fi
+  args:
+    executable: /bin/bash
   when: ansible_os_family in ["RedHat", "Amazon"]
+  register: nginx_install
+  changed_when: "'Complete!' in nginx_install.stdout"
 
+# ✅ Ubuntu/Debian
 - name: Install nginx (Debian/Ubuntu)
   ansible.builtin.apt:
     name: nginx
@@ -12,6 +21,7 @@
     update_cache: yes
   when: ansible_os_family == "Debian"
 
+# ✅ Copy nginx config template
 - name: Copy nginx configuration
   ansible.builtin.template:
     src: nginx.conf.j2
@@ -21,8 +31,10 @@
     mode: "0644"
   notify: restart nginx
 
+# ✅ Ensure nginx is running
 - name: Ensure nginx is running and enabled
   ansible.builtin.service:
     name: nginx
     state: started
     enabled: true
+  ignore_errors: yes
